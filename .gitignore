@@ -1,0 +1,12 @@
+node_modules/
+logs/*.log
+*.txt
+bin/
+.vscode/
+src/node_win32/Debug/
+src/node_win32/ipch/
+src/node_win32/node_win32/Debug/
+build/Debug/
+*.vs
+*.db
+
