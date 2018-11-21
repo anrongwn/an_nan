@@ -132,15 +132,17 @@ setInterval(() => {
     let curDate = new Date();
     let message = getTime('Y-M-d H:m:s.ms');//curDate.toLocaleString();
     message += ' hello win32...>>>';
+    let message_buf = Buffer.from(message, 'ascii');
 
-    console.log();
-    let message_len = Buffer.alloc(4);
+    //console.log();
+    let message_len = Buffer.alloc(4, 0, 'ascii');
     message_len.writeInt32LE(message.length);
-
+    message = null;
+    
     //write message len
     child.stdin.write(message_len, (error) => {
         if (error === undefined) {
-            console.log(`write message_len  : ${message.length}'${message_len}', ${message_len.byteLength}`);
+            console.log(`write message_len  : ${message_buf.byteLength}'${message_len}', ${message_len.byteLength}`);
         } else {
             console.log(`write message_len error, ${error}`);
         }
@@ -148,7 +150,7 @@ setInterval(() => {
     })
 
     //write message
-    child.stdin.write(message, (error) => {
+    child.stdin.write(message_buf, (error) => {
         if (error === undefined) {
             console.log(`write message  : ${message}`);
         } else {
