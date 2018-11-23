@@ -5,7 +5,10 @@ bin/
 .vscode/
 src/node_win32/Debug/
 src/node_win32/ipch/
+src/node_win32/*db
 src/node_win32/node_win32/Debug/
+src/node_win32/node_win32/lib/*
+src/node_win32/node_win32/include/*
 build/Debug/
 *.vs
 *.db

@@ -124,21 +124,29 @@ function getTime(format) {
     format = format.replace(/m/i, fix2number(curdate.getMinutes()));
     format = format.replace(/s/i, fix2number(curdate.getSeconds()));
     format = format.replace(/ms/i, fix3number(curdate.getMilliseconds()));
+
+    curdate = null;
     return format;
 }
 
-
+let reqsid = 0;
 setInterval(() => {
     let curDate = new Date();
-    let message = getTime('Y-M-d H:m:s.ms');//curDate.toLocaleString();
+    let message = getTime('Y-M-d H:m:s.ms'); //curDate.toLocaleString();
     message += ' hello win32...>>>';
+    message += (reqsid += 1).toString();
+
+    if (reqsid > 2000) {
+        //message = '%EOT%EOT'; //exit code
+    }
     let message_buf = Buffer.from(message, 'ascii');
 
     //console.log();
     let message_len = Buffer.alloc(4, 0, 'ascii');
     message_len.writeInt32LE(message.length);
     message = null;
-    
+    curDate = null;
+
     //write message len
     child.stdin.write(message_len, (error) => {
         if (error === undefined) {
@@ -152,17 +160,32 @@ setInterval(() => {
     //write message
     child.stdin.write(message_buf, (error) => {
         if (error === undefined) {
-            console.log(`write message  : ${message}`);
+            console.log(`write message  : ${message_buf}`);
         } else {
             console.log(`write message error, ${error}`);
         }
 
     })
 
-}, 1000);
+}, 10);
 
 process.on('SIGINT', () => {
     console.log(`app Received SIGINT.  process:${process.pid} exit(3).`);
+
+    /*
+    let message = '%EOT%EOT'; //exit code
+    
+    let message_buf = Buffer.from(message, 'ascii');
+
+    child.stdin.write(message_buf, (error) => {
+        if (error === undefined) {
+            console.log(`write message  : ${message_buf}`);
+        } else {
+            console.log(`write message error, ${error}`);
+        }
+    });
+    */
+
     child.kill('SIGTERM');
 
     process.exit(3);
