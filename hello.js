@@ -68,7 +68,7 @@ let child = cp.exec('./bin/node_win32.exe', defaults, (error, stdout, stderr) =>
     console.log(`exec info ${error}, ${stdout}, ${stderr}`);
 });
  */
-let child = cp.spawn('./src/node_win32/Debug/node_win32.exe', ['wangjr', 'nodejs']);
+let child = cp.spawn('./src/node_win32/Release/node_win32.exe', ['wangjr', 'nodejs']);
 const util = require('util');
 
 child.on('error', (err) => {
@@ -129,7 +129,7 @@ function getTime(format) {
 }
 
 let reqsid = 0;
-setInterval(() => {
+let intervalid = setInterval(() => {
     let curDate = new Date();
     let message = getTime('Y-M-d H:m:s.ms'); //curDate.toLocaleString();
     message += ' hello win32...>>>';
@@ -137,6 +137,8 @@ setInterval(() => {
 
     if (reqsid > 20000) {
         message = '%EOT%EOT'; //exit code
+        return;
+        //clearInterval(intervalid);
     }
     let message_buf = Buffer.from(message, 'ascii');
 
