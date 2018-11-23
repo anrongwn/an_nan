@@ -68,9 +68,8 @@ let child = cp.exec('./bin/node_win32.exe', defaults, (error, stdout, stderr) =>
     console.log(`exec info ${error}, ${stdout}, ${stderr}`);
 });
  */
-let child = cp.spawn('./bin/node_win32.exe', ['wangjr', 'nodejs']);
+let child = cp.spawn('./src/node_win32/Debug/node_win32.exe', ['wangjr', 'nodejs']);
 const util = require('util');
-
 
 child.on('error', (err) => {
     console.log(err);
@@ -136,8 +135,8 @@ setInterval(() => {
     message += ' hello win32...>>>';
     message += (reqsid += 1).toString();
 
-    if (reqsid > 2000) {
-        //message = '%EOT%EOT'; //exit code
+    if (reqsid > 20000) {
+        message = '%EOT%EOT'; //exit code
     }
     let message_buf = Buffer.from(message, 'ascii');
 
