@@ -114,21 +114,14 @@ const send_message_data = async function (message) {
     });
 };
 
-const reciv_data = async function () {
-    return new Promise((resolve, reject) => {
-        
-    })
-}
-
-
 let reqsid = 0;
-const send_count = 20000;
+const send_count = (200000 + 1);
 
 const interval_cb = async function () {
     let curDate = new Date();
     let message = getTime('Y-M-d H:m:s.ms'); //curDate.toLocaleString();
     message += ' hello win32...>>>';
-    message += (reqsid += 1).toString();
+    message += (reqsid+=1).toString();
 
     if (reqsid === send_count) {
         message = '@EOT@EOT'; //exit code

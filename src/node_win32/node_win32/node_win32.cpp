@@ -150,11 +150,10 @@ int main(int argc, char **argv)
 	}
 
 	g_app.stop();
-	//OutputDebugString("===node_win32 exit.");
-
-	g_anLog->debug("===node_win32 app exit.");
 
 	an_closeLog();
+
+	g_anLog->debug("===node_win32 app exit.");
     return 0;
 }
 
