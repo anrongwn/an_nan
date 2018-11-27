@@ -10,6 +10,7 @@
 #endif // DEBUG
 
 static const char * an_class_name = "an_node_win32";
+extern an_Async_Wrap g_cmd;
 anRun2::anRun2()
 {
 	hWnd_ = nullptr;
@@ -146,8 +147,9 @@ void anRun2::eLoop(void * arg) {
 	while (true) {
 		//ÓÅÏÈuv_loop
 		if (uv_loop_alive(loop)) {
-			OutputDebugString("====uv_loop_alive is true.");
-			more = uv_run(loop, UV_RUN_NOWAIT);
+			//OutputDebugString("====uv_loop_alive is true.");
+			//more = uv_run(loop, UV_RUN_NOWAIT);
+			more = uv_run(loop, UV_RUN_ONCE);
 			if (more) continue;
 		}
 
@@ -157,18 +159,21 @@ void anRun2::eLoop(void * arg) {
 		{
 			more = ::GetMessage(&msg, NULL, 0, 0);
 			if (0 == more) {
-				OutputDebugString("====GetMessage wm_quit message...");
+				//OutputDebugString("====GetMessage wm_quit message...");
+				g_anLog->info("===GetMessage wm_quit message...");
 				break;//reciv wm_quit message
 			}
 			if (-1 == more) {
-				OutputDebugString("====GetMessage -1 error.");
+				//OutputDebugString("====GetMessage -1 error.");
+				g_anLog->info("===GetMessage -1 error.");
 				break;//error
 			}
 
 			//handle message
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
-			OutputDebugString("====GetMessage msg.");
+			//OutputDebugString("====GetMessage msg.");
+			g_anLog->info("===DispatchMessage {} msg", msg.lParam);
 		}
 		else {
 			::Sleep(1);//busy-waiting...
@@ -176,7 +181,8 @@ void anRun2::eLoop(void * arg) {
 
 	}
 
-	OutputDebugString("====eLoop thread exit.");
+	//OutputDebugString("====eLoop thread exit.");
+	g_anLog->info("===eLoop thread exit.");
 }
 int anRun2::start(HINSTANCE hInstance) {
 	int res = 0;
@@ -205,9 +211,14 @@ int anRun2::stop() {
 	BOOL r = FALSE;
 	r = ::PostThreadMessage(this->msg_thread_id_, WM_QUIT, 0, 0);
 	if (FALSE==r) {
+
+		/*
 		std::stringstream ss;
 		ss << this->msg_thread_id_ << " PostThreadMessage failed." << "rc=" << r << "ec=" << GetLastError();
 		OutputDebugString(ss.str().c_str());
+		*/
+
+		g_anLog->debug("{} PostThreadMessage failed, rc={}, ec={}", this->msg_thread_id_, r, GetLastError());
 	}
 
 	uv_thread_join(&this->msg_thread_);
@@ -215,34 +226,45 @@ int anRun2::stop() {
 	return 0;
 }
 void anRun2::an_close_cb(uv_handle_t* handle) {
-	CanAllocator::an_free(handle);
+	if (handle->type == UV_ASYNC) {
+		g_cmd.push((an_Async*)handle);
+
+		uv_unref(handle);
+	}
+	//CanAllocator::an_free(handle);
 }
+
+static SYSTEMTIME st = { 0x00 };
+static char date[64] = { 0 };
 void anRun2::an_async_cb(uv_async_t* handle) {
-	anCmd * p_as_data = static_cast<anCmd*>(handle->data);
+	an_Async * p_as_data = static_cast<an_Async*>(handle);
 
 	std::string echo(p_as_data->base, p_as_data->len);
 	echo += "+<<<echo ";
-	SYSTEMTIME st = { 0x00 };
+	
 	::GetLocalTime(&st);
-	char date[64] = { 0 };
 	sprintf_s(date, "%04d-%02d-%02d %02d:%02d:%02d.%03d", st.wYear, st.wMonth, \
 		st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 	echo += date;
+	//OutputDebugStringA(echo.c_str());
 
+	g_anLog->info("===echo Res={}", echo);
 	DWORD nreaded = 0;
 	BOOL res = WriteFile(((anRun2*)(p_as_data->that))->stdout_, echo.c_str(), echo.length(), &nreaded, NULL);
 	if (TRUE == res)
 		FlushFileBuffers(((anRun2*)(p_as_data->that))->stdout_);
 	else {
-		OutputDebugStringA("===WriteFile faild.");
+		//OutputDebugStringA("===WriteFile faild.");
+		g_anLog->info("===WriteFile faild, ec={}", ::GetLastError());
 	}
 
-	CanAllocator::an_free(p_as_data->base);
-	CanAllocator::an_free(p_as_data);
+	//CanAllocator::an_free(p_as_data->base);
+	//CanAllocator::an_free(p_as_data);
 
 	uv_close((uv_handle_t*)handle, anRun2::an_close_cb);
 }
 int anRun2::sendCmd(std::string &&cmd) {
+	/*
 	uv_async_t * as = (uv_async_t*)CanAllocator::an_malloc(sizeof(uv_async_t));
 	anCmd * p_as_data = (anCmd*)CanAllocator::an_malloc(sizeof(anCmd));
 	p_as_data->len = cmd.length();
@@ -251,13 +273,51 @@ int anRun2::sendCmd(std::string &&cmd) {
 	p_as_data->that = this;
 
 	as->data = p_as_data;
-	uv_async_init(loop_, as, anRun2::an_async_cb);
+	*/
+	an_Async * as = g_cmd.pop();
+	if (as) {
+		as->setCmd(cmd.c_str(), cmd.length());
+		/*
+		std::stringstream ss;
+		ss << "===as " << as->base << ", len=" << as->len;
+		OutputDebugString(ss.str().c_str());
+		*/
+	}
+	else {
+		/*
+		std::stringstream ss;
+		ss << "===as is nullptr";
+		OutputDebugString(ss.str().c_str());
+		*/
 
-	int r = uv_async_send(as);
+		g_anLog->debug("===an_Async * as = g_cmd.pop() is nullptr.");
+	}
+	
+
+	int r = 0;
+	r = uv_async_init(loop_, as, anRun2::an_async_cb);
 	if (0 != r) {
+		/*
+		std::stringstream ss;
+		ss << "===uv_async_init failed.ec=" << r << ", " << uv_strerror(r);
+		OutputDebugString(ss.str().c_str());
+		*/
+		g_anLog->debug("===uv_async_init failed, ec={}, error={}", r, uv_strerror(r));
+	}
+
+	r = uv_async_send(as);
+	if (0 != r) {
+		/*
 		CanAllocator::an_free(p_as_data->base);
 		CanAllocator::an_free(p_as_data);
 		CanAllocator::an_free(as);
+		*/
+		/*
+		std::stringstream ss;
+		ss << "===uv_async_send failed.ec=" << r << ", " << uv_strerror(r);
+		OutputDebugString(ss.str().c_str());
+		*/
+		g_anLog->debug("===uv_async_send failed, ec={}, error={}", r, uv_strerror(r));
 	}
 
 	return r;
@@ -270,10 +330,11 @@ void anRun2::an_alloc_cb(uv_handle_t* handle, size_t suggested_size, uv_buf_t* b
 
 void anRun2::an_read_cb(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
 	anRun2 * that = static_cast<anRun2*>(uv_handle_get_data((uv_handle_t*)stream));
-	std::stringstream out;
 
+	std::stringstream out;
 	out << "===an_read_cb(nread=" << nread << ")";
 	OutputDebugString(out.str().c_str());
+
 	out.str("");
 	if (nread > 0) {
 		std::string log(buf->base, nread);

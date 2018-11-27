@@ -1,22 +1,10 @@
 #pragma once
 #include "libuv\\uv.h"
 #include <string>
+#include "an_async.h"
 
-//ÄÚ´æ·ÖÅäÆ÷
-class CanAllocator {
-public:
-	static char * an_malloc(size_t size) {
-		return (char*)malloc(size);
-	}
 
-	static void an_free(void *buf) {
-		free(buf);
-	}
-};
 
-struct anCmd : public uv_buf_t {
-	void * that;
-};
 
 class anRun2
 {

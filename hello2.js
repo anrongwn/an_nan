@@ -1,52 +1,7 @@
-var addon = require('bindings')('hello');
-
-//var obj = new addon.anObject(10);
-var obj = addon(233);
-
-//
-console.log(obj.plusOne());
-
-obj.fcb((data) => {
-    console.log(data);
-});
-
-
-obj.async_fcb(100, (err, data) => {
-
-    if (err === null)
-        console.log(`async callback result : ${data}`);
-    else
-        console.log(`async callback error code = ${err}`);
-});
-console.log('async_fcb ok');
-
-
-let cmd = {
-    id: 1,
-    param: {
-        value1: 'wangjr',
-        value2:'jianrong'
-    }
-}
-
-cmd.id = 100;
-if (cmd.param !== undefined) {
-    cmd.param.value1 = 'wad';
-}
-JSON.stringify(cmd);
-//cmd.param2 = 'sd';
-if (cmd.param2 === undefined) {
-    console.log('cmd.param2 === undefined');
-}
-let scmd = JSON.stringify(cmd);
-console.log(scmd);
-
-let ocmd = JSON.parse(scmd);
-console.log(ocmd);
-console.log(typeof (ocmd));
 
 //stdio
 const cp = require('child_process');
+const util = require('util');
 const path = require('path');
 
 let win32_cmd = path.join(__dirname, '/bin/node_win32.exe');
@@ -68,8 +23,9 @@ let child = cp.exec('./bin/node_win32.exe', defaults, (error, stdout, stderr) =>
     console.log(`exec info ${error}, ${stdout}, ${stderr}`);
 });
  */
+
 let child = cp.spawn('./src/node_win32/Release/node_win32.exe', ['wangjr', 'nodejs']);
-const util = require('util');
+
 
 child.on('error', (err) => {
     console.log(err);
@@ -87,9 +43,11 @@ child.stdin.on('finish', () => {
 })
 */
 
+/*
 child.stdout.on('data', (data) => {
     console.log(`recv child data: ${data}`);
 })
+*/
 
 child.on('close', (code, signal) => {
     console.log(`child close ${code}, ${signal}`);
@@ -128,10 +86,45 @@ function getTime(format) {
     return format;
 }
 
-let reqsid = 0;
-const send_count = 10;
+const send_message_len = async function (message_len) {
+    return new Promise((resolve, reject) => {
+        child.stdin.write(message_len, (error) => {
+            if (error === undefined) {
+                console.log(`write message_len  : '${message_len}'`);
+                resolve('write_len_ok');
+            } else {
+                console.log(`write message_len error, ${error}`);
+                reject('write_len_error');
+            }
+        });
+    });
+};
 
-let intervalid = setInterval(() => {
+const send_message_data = async function (message) {
+    return new Promise((resolve, reject) => {
+        child.stdin.write(message, (error) => {
+            if (error === undefined) {
+                console.log(`write message  : ${message}`);
+                resolve('write_message_ok');
+            } else {
+                console.log(`write message error, ${error}`);
+                reject('write_message_error');
+            }
+        });
+    });
+};
+
+const reciv_data = async function () {
+    return new Promise((resolve, reject) => {
+        
+    })
+}
+
+
+let reqsid = 0;
+const send_count = 20000;
+
+const interval_cb = async function () {
     let curDate = new Date();
     let message = getTime('Y-M-d H:m:s.ms'); //curDate.toLocaleString();
     message += ' hello win32...>>>';
@@ -144,57 +137,44 @@ let intervalid = setInterval(() => {
 
     if (reqsid <= send_count) {
         let message_buf = Buffer.from(message, 'ascii');
-
-        //console.log();
         let message_len = Buffer.alloc(4, 0, 'ascii');
         message_len.writeInt32LE(message.length);
         message = null;
         curDate = null;
 
-        //write message len
-        child.stdin.write(message_len, (error) => {
-            if (error === undefined) {
-                console.log(`write message_len  : ${message_buf.byteLength}'${message_len}', ${message_len.byteLength}`);
-            } else {
-                console.log(`write message_len error, ${error}`);
-            }
+        let v = await send_message_len(message_len);
+        console.log(`sent_message_len result : ${v}`);
 
-        })
-
-        //write message
-        child.stdin.write(message_buf, (error) => {
-            if (error === undefined) {
-                console.log(`write message  : ${message_buf}`);
-            } else {
-                console.log(`write message error, ${error}`);
-            }
-
-        })
+        let v1 = await send_message_data(message_buf);
+        console.log(`send_message_data result : ${v1}`);
+        message_buf = null;
     }
+    
 
     if (reqsid > send_count) {
         return;
     }
-}, 1000);
+}
 
+//开始发送
+interval_cb();
+
+/*
+let intervalid = setInterval(() => {
+    return;
+}, 1000);
+*/
 process.on('SIGINT', () => {
     console.log(`app Received SIGINT.  process:${process.pid} exit(3).`);
-
-    /*
-    let message = '%EOT%EOT'; //exit code
-    
-    let message_buf = Buffer.from(message, 'ascii');
-
-    child.stdin.write(message_buf, (error) => {
-        if (error === undefined) {
-            console.log(`write message  : ${message_buf}`);
-        } else {
-            console.log(`write message error, ${error}`);
-        }
-    });
-    */
 
     child.kill('SIGTERM');
 
     process.exit(3);
 });
+
+child.stdout.on('data', (data) => {
+    console.log(`recv child data: ${data}`);
+
+    //再次发送
+    interval_cb();
+})

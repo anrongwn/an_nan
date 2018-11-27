@@ -13,9 +13,11 @@
 //#include "anRun.h"
 #include "anRun2.h"
 
-const char * EXIT_CODE = "\%EOT\%EOT";	//EOT
+
+const char * EXIT_CODE = "@EOT@EOT";	//EOT
 
 anRun2 g_app;
+an_Async_Wrap g_cmd(&g_app);
 
 void SignalHandler(int signal)
 {
@@ -34,6 +36,8 @@ void SignalHandler(int signal)
 
 int main(int argc, char **argv)
 {
+	an_initLog();
+
 #ifdef DEBUG
 	//
 	HWND hw = GetConsoleWindow();
@@ -51,13 +55,20 @@ int main(int argc, char **argv)
 	const int buf_size = 1024;
 	char buf[buf_size] = { 0 };
 
+	/*
 	sprintf_s(buf, "===argc=%d", argc);
 	OutputDebugStringA(buf);
+	*/
+	g_anLog->debug("===argc num={}", argc);
+
 	memset(buf, 0x00, buf_size);
 	for (int i = 0; i < argc; ++i) {
+		/*
 		sprintf_s(buf, "===argv[%d] = %s", i, argv[i]);
 		OutputDebugStringA(buf);
 		memset(buf, 0x00, buf_size);
+		*/
+		g_anLog->debug("===argv[{}]= {}", i, argv[i]);
 	}
 
 	HANDLE hStdIn = INVALID_HANDLE_VALUE;
@@ -70,7 +81,8 @@ int main(int argc, char **argv)
 	HINSTANCE hInstance = ::GetModuleHandle(NULL);
 
 	if ((INVALID_HANDLE_VALUE == hStdIn) || (INVALID_HANDLE_VALUE == hStdOut)) {
-		OutputDebugString("===invalid stdin or stdout handle.exit(1)");
+		//OutputDebugString("===invalid stdin or stdout handle.exit(1)");
+		g_anLog->info("===invalid stdin or stdout handle.exit(1)");
 		exit(1);
 	}
 	
@@ -83,33 +95,35 @@ int main(int argc, char **argv)
 	BOOL res = TRUE;
 	//HANDLE  hEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 
+
+	int message_len = 0;
+	DWORD nreaded = 0;
+	char message[65536] = { 0 };
 	while (true)
 	{
 		//first: read message len
-		int message_len = 0;
-		DWORD nreaded = 0;
-		//OVERLAPPED stOverlapped = { 0 };
-		//stOverlapped.hEvent = hEvent;
-
-		//res = ::ReadFile(hStdIn, (void*)&message_len, 4, &nreaded, &stOverlapped);
 		res = ::ReadFile(hStdIn, (void*)&message_len, 4, &nreaded, NULL);
 		if ((FALSE == res) || (nreaded <= 0)) {
 			continue;
 		}
 		
-		sprintf_s(buf, "===recv message_len=%d", message_len);
+		/*
+		sprintf_s(buf, "===recv message_len=%d\0", message_len);
 		OutputDebugStringA(buf);
-		memset(buf, 0x00, buf_size);
-		
+		//memset(buf, 0x00, buf_size);
+		*/
+		g_anLog->info("===recv message_len={}", message_len);
 		//second : read message data
-		char * message = new char[message_len+1];
-		message[message_len] = '\0';
 		nreaded = 0;
 		res = ::ReadFile(hStdIn, (void*)message, message_len, &nreaded, NULL);
-		
-		sprintf_s(buf, "===%d ReadFile readed=%d, message_len=%d, message=%s", res, nreaded, message_len, message);
+		message[message_len] = '\0';
+
+		/*
+		sprintf_s(buf, "===%d ReadFile readed=%d, message_len=%d, message=%s\0", res, nreaded, message_len, message);
 		OutputDebugStringA(buf);
-		memset(buf, 0x00, buf_size);
+		//memset(buf, 0x00, buf_size);
+		*/
+		g_anLog->info("==={} ReadFile readed={}, message_len={}, message={}", res, nreaded, message_len, message);
 
 		if ((FALSE == res) || (nreaded <= 0)) {
 			continue;
@@ -119,71 +133,28 @@ int main(int argc, char **argv)
 		std::string echo(message);
 		if (0 == echo.compare(EXIT_CODE))
 		{
-			OutputDebugString("===reciv \%EOT\%EOT cmd, exit.");
+			//OutputDebugString("===reciv @EOT@EOT cmd, exit.\0");
+			g_anLog->debug("===reciv {} cmd, exit.", EXIT_CODE);
 			break;
 		}
 		int r = g_app.sendCmd(std::move(echo));
 		if (0 != r) {
-			OutputDebugString("===g_app.sendCmd failed.");
+			g_anLog->info("===g_app.sendCmd failed, ec={}", r);
+			//OutputDebugString("===g_app.sendCmd failed.");
 		}
 
-		
-
-		/*
-		echo += "+<<<echo ";
-		SYSTEMTIME st = { 0x00 };
-		::GetLocalTime(&st);
-		char date[64] = { 0 };
-		sprintf_s(date, "%04d-%02d-%02d %02d:%02d:%02d.%03d", st.wYear, st.wMonth, \
-			st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
-		echo += date;
-
-		nreaded = 0;
-		res = WriteFile(hStdOut, echo.c_str(), echo.length(), &nreaded, NULL);
-		if(TRUE==res)
-			FlushFileBuffers(hStdOut);
-		else {
-			OutputDebugStringA("===WriteFile faild.");
-			break;
-		}
-		*/
 
 		//end: clean
-		delete[] message;
 		message_len = 0;
-
-		/*
-		DWORD len = 0, readed=0;
-		res = ::ReadFile(hStdIn, (void*)buf, buf_size, &readed, NULL);
-		if ((res == FALSE) || (readed <= 0)) {
-			continue;
-		}
-		
-		
-		//res = ::ReadFile(hStdIn, (void *)buf, len, &readed, NULL);
-		if (res) {
-			std::string echo(buf);
-			echo += "+<<<echo ";
-			SYSTEMTIME st = { 0x00 };
-			::GetLocalTime(&st);
-			char date[100] = { 0 };
-			sprintf_s(date, "%04d-%02d-%02d %02d:%02d:%02d.%03d", st.wYear, st.wMonth, \
-				st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
-			echo += date;
-
-			WriteFile(hStdOut, echo.c_str(), echo.length(), &readed, NULL);
-
-			FlushFileBuffers(hStdOut);
-		}
-		
-		memset(buf, 0x00, buf_size);
-		::Sleep(10);
-		*/
+		nreaded = 0;
 	}
 
 	g_app.stop();
-	OutputDebugString("===node_win32 exit.");
+	//OutputDebugString("===node_win32 exit.");
 
+	g_anLog->debug("===node_win32 app exit.");
+
+	an_closeLog();
     return 0;
 }
 

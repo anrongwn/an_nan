@@ -30,6 +30,9 @@
     <ClInclude Include="anRun2.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="an_async.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
