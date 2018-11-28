@@ -14,7 +14,7 @@ void an_initLog() {
 	spdlog::init_thread_pool(65536, 1);
 	g_anLog = spdlog::daily_logger_mt<spdlog::async_factory>(AN_LOG_NAME, "logs/an_node_win32.log");
 
-	g_anLog->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%L] [%t] %v");
+	g_anLog->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [:>5%L] [%t] %v");
 	g_anLog->set_level(spdlog::level::trace);
 	
 

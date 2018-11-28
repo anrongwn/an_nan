@@ -4,8 +4,6 @@
 #include "an_async.h"
 
 
-
-
 class anRun2
 {
 public:
@@ -27,7 +25,7 @@ public:
 		return stdout_;
 	};
 
-	int sendCmd(std::string &&cmd);
+	int sendCmd(const char * cmd, size_t len);
 private:
 	HWND hWnd_;
 	WNDCLASS wc_;

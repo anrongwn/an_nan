@@ -7,6 +7,8 @@
 #include <signal.h>
 #include <iostream>
 #include <string>
+#include <atomic>
+#include <type_traits>
 
 #include "cJSON-1.7.8\\cJSON.h"
 #include "libuv\\uv.h"
@@ -130,14 +132,15 @@ int main(int argc, char **argv)
 		}
 
 		//thirdly: echo 
-		std::string echo(message);
-		if (0 == echo.compare(EXIT_CODE))
+		//std::string echo(message);
+		//if (0 == echo.compare(EXIT_CODE))
+		if (0==strcmp(EXIT_CODE, message))
 		{
 			//OutputDebugString("===reciv @EOT@EOT cmd, exit.\0");
 			g_anLog->debug("===reciv {} cmd, exit.", EXIT_CODE);
 			break;
 		}
-		int r = g_app.sendCmd(std::move(echo));
+		int r = g_app.sendCmd(message, message_len);
 		if (0 != r) {
 			g_anLog->info("===g_app.sendCmd failed, ec={}", r);
 			//OutputDebugString("===g_app.sendCmd failed.");

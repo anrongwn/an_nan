@@ -2,6 +2,7 @@
 #include "anRun2.h"
 #include <string>
 #include <sstream>
+#include <chrono>
 
 #ifdef DEBUG
 #pragma comment(lib, ".//lib//libuv//debug//libuv.lib")
@@ -235,22 +236,50 @@ void anRun2::an_close_cb(uv_handle_t* handle) {
 }
 
 static SYSTEMTIME st = { 0x00 };
-static char date[64] = { 0 };
+static char cmd_data[65536] = { 0 };
+static int cmd_len = 0;
+static const char * echo_flag = "+<<<echo ";
+static char date_tmp[24] = { 0 };
+
 void anRun2::an_async_cb(uv_async_t* handle) {
 	an_Async * p_as_data = static_cast<an_Async*>(handle);
 
+	auto start = std::chrono::system_clock::now();
+
+	/*
 	std::string echo(p_as_data->base, p_as_data->len);
 	echo += "+<<<echo ";
-	
 	::GetLocalTime(&st);
 	sprintf_s(date, "%04d-%02d-%02d %02d:%02d:%02d.%03d", st.wYear, st.wMonth, \
 		st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 	echo += date;
-	//OutputDebugStringA(echo.c_str());
+	*/
 
-	g_anLog->info("===echo Res={}", echo);
+	cmd_len = p_as_data->len;
+	memcpy(cmd_data, p_as_data->base, cmd_len);
+	memcpy(cmd_data + cmd_len, echo_flag, 9);
+	cmd_len += 9;
+	::GetLocalTime(&st);
+	sprintf_s(date_tmp, "%04d-%02d-%02d %02d:%02d:%02d.%03d", st.wYear, st.wMonth, \
+		st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+	memcpy(cmd_data + cmd_len, date_tmp, 24);
+	cmd_len += 24;
+	
+	
+	
+	//OutputDebugStringA(echo.c_str());
+	auto end = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+
+	g_anLog->info("===echo Res={}, et={:f}", cmd_data, elapsed_seconds.count());
+	DWORD nreaded = 0;
+	BOOL res = WriteFile(((anRun2*)(p_as_data->that))->stdout_, cmd_data, cmd_len, &nreaded, NULL);
+
+	/*
+	g_anLog->info("===echo Res={}, et={:f}", echo, elapsed_seconds.count());
 	DWORD nreaded = 0;
 	BOOL res = WriteFile(((anRun2*)(p_as_data->that))->stdout_, echo.c_str(), echo.length(), &nreaded, NULL);
+	*/
 	if (TRUE == res)
 		FlushFileBuffers(((anRun2*)(p_as_data->that))->stdout_);
 	else {
@@ -263,7 +292,7 @@ void anRun2::an_async_cb(uv_async_t* handle) {
 
 	uv_close((uv_handle_t*)handle, anRun2::an_close_cb);
 }
-int anRun2::sendCmd(std::string &&cmd) {
+int anRun2::sendCmd(const char * cmd, size_t len) {
 	/*
 	uv_async_t * as = (uv_async_t*)CanAllocator::an_malloc(sizeof(uv_async_t));
 	anCmd * p_as_data = (anCmd*)CanAllocator::an_malloc(sizeof(anCmd));
@@ -276,7 +305,7 @@ int anRun2::sendCmd(std::string &&cmd) {
 	*/
 	an_Async * as = g_cmd.pop();
 	if (as) {
-		as->setCmd(cmd.c_str(), cmd.length());
+		as->setCmd(cmd, len);
 		/*
 		std::stringstream ss;
 		ss << "===as " << as->base << ", len=" << as->len;
