@@ -6,6 +6,7 @@
   "private": true,
   "dependencies": {
     "bindings": "~1.2.1",
+    "moment": "^2.22.2",
     "nan": "^2.0.0"
   },
   "scripts": {

@@ -60,7 +60,7 @@ struct an_Async : public uv_async_t, anCmd {
 	
 };
 
-#define AN_ASYNC_SIZE (100)
+#define AN_ASYNC_SIZE (1000)
 struct an_Async_Wrap {
 	an_Async_Wrap(anRun2* that):that_(that) {
 		uv_mutex_init(&mx_);
@@ -118,7 +118,8 @@ struct an_Async_Wrap {
 	}
 	void push(an_Async *cmd) {
 		uv_mutex_lock(&mx_);
-		async_queue_.push(cmd);
+		//async_queue_.push(cmd);
+		async_queue_.emplace(cmd);
 		uv_mutex_unlock(&mx_);
 	}
 

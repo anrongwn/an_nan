@@ -1,4 +1,5 @@
 var addon = require('bindings')('hello');
+const moment = require('moment');
 
 //var obj = new addon.anObject(10);
 var obj = addon(233);
@@ -129,13 +130,14 @@ function getTime(format) {
 }
 
 let reqsid = 0;
-const send_count = 10;
+const send_count = 200000+1;
 
 let intervalid = setInterval(() => {
-    let curDate = new Date();
-    let message = getTime('Y-M-d H:m:s.ms'); //curDate.toLocaleString();
+    //let curDate = new Date();
+    //let message = getTime('Y-M-d H:m:s.ms'); //curDate.toLocaleString();
+    let message = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
     message += ' hello win32...>>>';
-    message += (reqsid += 1).toString();
+    message += (reqsid += 1);
 
     if (reqsid === send_count) {
         message = '@EOT@EOT'; //exit code
@@ -149,7 +151,6 @@ let intervalid = setInterval(() => {
         let message_len = Buffer.alloc(4, 0, 'ascii');
         message_len.writeInt32LE(message.length);
         message = null;
-        curDate = null;
 
         //write message len
         child.stdin.write(message_len, (error) => {
@@ -175,7 +176,7 @@ let intervalid = setInterval(() => {
     if (reqsid > send_count) {
         return;
     }
-}, 1000);
+}, 1);
 
 process.on('SIGINT', () => {
     console.log(`app Received SIGINT.  process:${process.pid} exit(3).`);

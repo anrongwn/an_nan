@@ -3,6 +3,7 @@
 const cp = require('child_process');
 const util = require('util');
 const path = require('path');
+const moment = require('moment');
 
 let win32_cmd = path.join(__dirname, '/bin/node_win32.exe');
 console.log(win32_cmd);
@@ -118,8 +119,9 @@ let reqsid = 0;
 const send_count = (200000 + 1);
 
 const interval_cb = async function () {
-    let curDate = new Date();
-    let message = getTime('Y-M-d H:m:s.ms'); //curDate.toLocaleString();
+    //let curDate = new Date();
+    //let message = getTime('Y-M-d H:m:s.ms'); //curDate.toLocaleString();
+    let message = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
     message += ' hello win32...>>>';
     message += (reqsid+=1).toString();
 
@@ -133,7 +135,6 @@ const interval_cb = async function () {
         let message_len = Buffer.alloc(4, 0, 'ascii');
         message_len.writeInt32LE(message.length);
         message = null;
-        curDate = null;
 
         let v = await send_message_len(message_len);
         console.log(`sent_message_len result : ${v}`);
