@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <chrono>
+#include <ctime>
 
 #ifdef DEBUG
 #pragma comment(lib, ".//lib//libuv//debug//libuv.lib")
@@ -246,6 +247,7 @@ void anRun2::an_async_cb(uv_async_t* handle) {
 
 	auto start = std::chrono::system_clock::now();
 
+
 	/*
 	std::string echo(p_as_data->base, p_as_data->len);
 	echo += "+<<<echo ";
@@ -259,12 +261,14 @@ void anRun2::an_async_cb(uv_async_t* handle) {
 	memcpy(cmd_data, p_as_data->base, cmd_len);
 	memcpy(cmd_data + cmd_len, echo_flag, 9);
 	cmd_len += 9;
+	
 	::GetLocalTime(&st);
 	sprintf_s(date_tmp, "%04d-%02d-%02d %02d:%02d:%02d.%03d", st.wYear, st.wMonth, \
 		st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+
+
 	memcpy(cmd_data + cmd_len, date_tmp, 24);
 	cmd_len += 24;
-	
 	
 	
 	//OutputDebugStringA(echo.c_str());

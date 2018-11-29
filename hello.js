@@ -133,7 +133,6 @@ let reqsid = 0;
 const send_count = 200000+1;
 
 let intervalid = setInterval(() => {
-    //let curDate = new Date();
     //let message = getTime('Y-M-d H:m:s.ms'); //curDate.toLocaleString();
     let message = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
     message += ' hello win32...>>>';
@@ -150,12 +149,12 @@ let intervalid = setInterval(() => {
         //console.log();
         let message_len = Buffer.alloc(4, 0, 'ascii');
         message_len.writeInt32LE(message.length);
-        message = null;
+        //message = null;
 
         //write message len
         child.stdin.write(message_len, (error) => {
             if (error === undefined) {
-                console.log(`write message_len  : ${message_buf.byteLength}'${message_len}', ${message_len.byteLength}`);
+                //console.log(`write message_len  : ${message_buf.byteLength}'${message_len}', ${message_len.byteLength}`);
             } else {
                 console.log(`write message_len error, ${error}`);
             }

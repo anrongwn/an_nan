@@ -88,10 +88,20 @@ function getTime(format) {
 }
 
 const send_message_len = async function (message_len) {
+    child.stdin.write(message_len, (error) => {
+        if (error === undefined) {
+            //console.log(`write message_len  : '${message_len}'`);
+            return ('write_len_ok');
+        } else {
+            console.log(`write message_len error, ${error}`);
+            throw('write_len_error');
+        }
+    });
+    /*
     return new Promise((resolve, reject) => {
         child.stdin.write(message_len, (error) => {
             if (error === undefined) {
-                console.log(`write message_len  : '${message_len}'`);
+                //console.log(`write message_len  : '${message_len}'`);
                 resolve('write_len_ok');
             } else {
                 console.log(`write message_len error, ${error}`);
@@ -99,9 +109,21 @@ const send_message_len = async function (message_len) {
             }
         });
     });
+    */
 };
 
 const send_message_data = async function (message) {
+    child.stdin.write(message, (error) => {
+        if (error === undefined) {
+            console.log(`write message  : ${message}`);
+            return ('write_message_ok');
+        } else {
+            console.log(`write message error, ${error}`);
+            throw('write_message_error');
+        }
+    });
+
+    /*
     return new Promise((resolve, reject) => {
         child.stdin.write(message, (error) => {
             if (error === undefined) {
@@ -113,17 +135,17 @@ const send_message_data = async function (message) {
             }
         });
     });
+    */
 };
 
 let reqsid = 0;
 const send_count = (200000 + 1);
 
 const interval_cb = async function () {
-    //let curDate = new Date();
     //let message = getTime('Y-M-d H:m:s.ms'); //curDate.toLocaleString();
     let message = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
     message += ' hello win32...>>>';
-    message += (reqsid+=1).toString();
+    message += (reqsid+=1);
 
     if (reqsid === send_count) {
         message = '@EOT@EOT'; //exit code
@@ -134,19 +156,29 @@ const interval_cb = async function () {
         let message_buf = Buffer.from(message, 'ascii');
         let message_len = Buffer.alloc(4, 0, 'ascii');
         message_len.writeInt32LE(message.length);
-        message = null;
 
+        try {
+            let v = await send_message_len(message_len);
+            let v1 = await send_message_data(message_buf);
+        }
+        catch (err) {
+            console.log(err);
+        }
+        
+        /*
         let v = await send_message_len(message_len);
-        console.log(`sent_message_len result : ${v}`);
+        //console.log(`sent_message_len result : ${v}`);
 
         let v1 = await send_message_data(message_buf);
-        console.log(`send_message_data result : ${v1}`);
-        message_buf = null;
+        //console.log(`send_message_data result : ${v1}`);
+        //message_buf = null;
+        */
+       
     }
     
 
     if (reqsid > send_count) {
-        return;
+        return 0;
     }
 }
 
