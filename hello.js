@@ -149,7 +149,7 @@ let intervalid = setInterval(() => {
         //console.log();
         let message_len = Buffer.alloc(4, 0, 'ascii');
         message_len.writeInt32LE(message.length);
-        //message = null;
+        message = null;
 
         //write message len
         child.stdin.write(message_len, (error) => {
@@ -158,18 +158,20 @@ let intervalid = setInterval(() => {
             } else {
                 console.log(`write message_len error, ${error}`);
             }
-
+            message_len = null;
         })
 
         //write message
         child.stdin.write(message_buf, (error) => {
             if (error === undefined) {
                 console.log(`write message  : ${message_buf}`);
+                
             } else {
                 console.log(`write message error, ${error}`);
             }
-
+            message_buf = null;
         })
+
     }
 
     if (reqsid > send_count) {

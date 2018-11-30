@@ -174,6 +174,10 @@ const interval_cb = async function () {
         //message_buf = null;
         */
        
+        //clear
+        message = null;
+        message_buf = null;
+        message_len = null;
     }
     
 
