@@ -1,5 +1,8 @@
 #pragma once
 #include "include\cJSON-1.7.8\cJSON.h"
+#include <unordered_map>
+#include <string>
+
 
 /**ÃüÁîÇëÇó¡¢ÃüÁîÏìÓ¦
 cmd:wfsopen/wfsclose/wfsgetinf/wfsexecute
@@ -8,6 +11,26 @@ timeout:
 data:{...}
 result:{...}
 */
+typedef enum {
+	e_an_wfsopen=1,
+	e_an_wfsclose,
+	e_an_wfsgetinfo,
+	e_an_wfsexecute,
+	e_an_wfsundefined
+}e_an_cmdtype;
+static inline int an_get_cmdtype(const char*cmd) {
+	static std::unordered_map<std::string, int> s_type_map = { {"wfsopen", e_an_wfsopen }, {"wfsclose", e_an_wfsclose }, \
+		{"wfsgetinfo", e_an_wfsgetinfo}, {"wfsexecute", e_an_wfsexecute } };
+
+	int type = e_an_wfsundefined;
+	auto it = s_type_map.find(std::string(cmd));
+	if (it != s_type_map.end()) {
+		type = it->second;
+	}
+
+	return type;
+}
+
 
 class anCmdParser
 {
@@ -23,7 +46,7 @@ public:
 		}
 	}
 
-	char * getCmd();
+	int getCmdType();
 	int getTimeStamp();
 	int getTimeOut();
 

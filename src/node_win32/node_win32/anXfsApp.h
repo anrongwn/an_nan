@@ -25,7 +25,7 @@ public:
 	};
 
 	//
-	int task(const char *cmd, size_t len);
+	
 
 	//
 	void insertSp(std::string& serviceName, HSERVICE hService);

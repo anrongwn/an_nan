@@ -29,6 +29,7 @@ public:
 	int sendCmd(const char * cmd, size_t len);
 	int echoCmdResult(const char *result, size_t len);
 private:
+	int task(const char *cmd, size_t len);
 
 	int init(HINSTANCE hInstance);
 	static void eLoop(void * arg);

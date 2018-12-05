@@ -13,7 +13,7 @@ anCmdParser::~anCmdParser()
 	releaseRoot();
 }
 
-char * anCmdParser::getCmd() {
+int anCmdParser::getCmdType() {
 	char * cmd = nullptr;
 	if (root_) {
 		cJSON * item = cJSON_GetObjectItem(root_, "cmd");
@@ -21,7 +21,7 @@ char * anCmdParser::getCmd() {
 			cmd = cJSON_GetStringValue(item);
 		}
 	}
-	return cmd;
+	return (an_get_cmdtype(cmd));
 }
 
 int anCmdParser::getTimeStamp() {

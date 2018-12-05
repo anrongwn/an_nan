@@ -247,21 +247,35 @@ static int cmd_len = 0;
 static const char * echo_flag = "+<<<echo ";
 static char date_tmp[24] = { 0 };
 
+int anRun2::task(const char * cmd, size_t len) {
+	int r = 0;
+	uv_buf_t * cmd_data = (uv_buf_t*)CanAllocator::an_malloc(sizeof(uv_buf_t));
+	cmd_data->len = (len+1);
+	cmd_data->base = CanAllocator::an_malloc(cmd_data->len);
+	cmd_data->base[len] = '\0';
+
+	an_work_req * work = (an_work_req*)CanAllocator::an_malloc(sizeof(an_work_req));
+	work->that_ = &this->xfs_;
+	work->data = cmd_data;
+	work->result_ = nullptr;
+
+	r = uv_queue_work(this->loop_, work, anXfsApp::work_cb, anXfsApp::completed_work_cb);
+	
+	g_anLog->info("anRun2::task work={0:x}, cmd={}, cmd_len={}, uv_queue_work={}", (void*)work, cmd_data->base, cmd_data->len, r);
+	return r;
+}
+
 void anRun2::an_async_cb(uv_async_t* handle) {
 	an_Async * p_as_data = static_cast<an_Async*>(handle);
 
-	auto start = std::chrono::system_clock::now();
+	g_anLog->info("anRun2::an_async_cb handle={0:x}, cmd={}, cmd_len={}", (void*)handle, p_as_data->base, p_as_data->len);
+	//auto start = std::chrono::system_clock::now();
 
+	//生成work任务
+	anRun2 * that = static_cast<anRun2*>(p_as_data->that);
+	that->task(p_as_data->base, p_as_data->len);
 
-	/*
-	std::string echo(p_as_data->base, p_as_data->len);
-	echo += "+<<<echo ";
-	::GetLocalTime(&st);
-	sprintf_s(date, "%04d-%02d-%02d %02d:%02d:%02d.%03d", st.wYear, st.wMonth, \
-		st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
-	echo += date;
-	*/
-
+	/*//test echo
 	cmd_len = p_as_data->len;
 	memcpy(cmd_data, p_as_data->base, cmd_len);
 	memcpy(cmd_data + cmd_len, echo_flag, 9);
@@ -283,12 +297,6 @@ void anRun2::an_async_cb(uv_async_t* handle) {
 	g_anLog->info("===echo Res={}, et={:f}", cmd_data, elapsed_seconds.count());
 	DWORD nreaded = 0;
 	BOOL res = WriteFile(((anRun2*)(p_as_data->that))->stdout_, cmd_data, cmd_len, &nreaded, NULL);
-
-	/*
-	g_anLog->info("===echo Res={}, et={:f}", echo, elapsed_seconds.count());
-	DWORD nreaded = 0;
-	BOOL res = WriteFile(((anRun2*)(p_as_data->that))->stdout_, echo.c_str(), echo.length(), &nreaded, NULL);
-	*/
 	if (TRUE == res)
 		FlushFileBuffers(((anRun2*)(p_as_data->that))->stdout_);
 	else {
@@ -298,6 +306,7 @@ void anRun2::an_async_cb(uv_async_t* handle) {
 
 	//CanAllocator::an_free(p_as_data->base);
 	//CanAllocator::an_free(p_as_data);
+	*/
 
 	uv_close((uv_handle_t*)handle, anRun2::an_close_cb);
 }

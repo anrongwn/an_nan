@@ -42,11 +42,7 @@ HRESULT anXfsApp::uninitXFS() {
 	return hr;
 }
 
-int anXfsApp::task(const char * cmd, size_t len) {
-	int r = 0;
 
-	return r;
-}
 
 void anXfsApp::insertSp(std::string& serviceName, HSERVICE hService) {
 	std::lock_guard<std::mutex> lock(mtx_);
@@ -99,7 +95,28 @@ void anXfsApp::work_cb(uv_work_t* req) {
 
 	//¹¹Ôìcmd
 	anCmdParser cmdObject(cmd->base);
-	
+	int cmdtype = cmdObject.getCmdType();
+	int timestamp = cmdObject.getTimeStamp();
+	int timeout = cmdObject.getTimeOut();
+	char * servicename = cmdObject.getServiceName();
+	int cmdid = cmdObject.getCmdId();
+	char * cmdParam = cmdObject.getCmdParam();
+
+
+	char *cmdbuffer = cmdObject.getCmdBuffer();
+	g_anLog->info("anXfsApp::work_cb cmd={}", cmdbuffer);
+	switch (cmdtype) {
+	case e_an_wfsopen:
+		break;
+	case e_an_wfsclose:
+		break;
+	case e_an_wfsgetinfo:
+		break;
+	case e_an_wfsexecute:
+		break;
+	default:
+		break;
+	}
 
 }
 
@@ -107,10 +124,13 @@ void anXfsApp::completed_work_cb(uv_work_t* req, int status) {
 	an_work_req * work = static_cast<an_work_req*>(req);
 
 	//
-	work->that_->fn_(work->result_->base, work->result_->len);
+	int r = work->that_->fn_(work->result_->base, work->result_->len);
 
+	g_anLog->info("anXfsApp::completed_work_cb call fn({}, {})={}", work->result_->base, work->result_->len, r);
 	//free
 	CanAllocator::an_free(work->result_->base);
 	CanAllocator::an_free(work->result_);
+	CanAllocator::an_free(((uv_buf_t*)(work->data))->base);
+	CanAllocator::an_free(work->data);
 	CanAllocator::an_free(work);
 }
