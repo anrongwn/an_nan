@@ -18,8 +18,8 @@
 
 const char * EXIT_CODE = "@EOT@EOT";	//EOT
 
-anRun2 g_app;
-an_Async_Wrap g_cmd(&g_app);
+anRun2 g_event_enginer;
+an_Async_Wrap g_cmd(&g_event_enginer);
 
 void SignalHandler(int signal)
 {
@@ -90,8 +90,8 @@ int main(int argc, char **argv)
 	
 	//start
 	//anRun::start(hInstance);
-	g_app.setStdOut(hStdOut);
-	g_app.start(hInstance);
+	g_event_enginer.setStdOut(hStdOut);
+	g_event_enginer.start(hInstance);
 	
 	//uv_async_init()
 	BOOL res = TRUE;
@@ -140,10 +140,10 @@ int main(int argc, char **argv)
 			g_anLog->debug("===reciv {} cmd, exit.", EXIT_CODE);
 			break;
 		}
-		int r = g_app.sendCmd(message, message_len);
+		int r = g_event_enginer.sendCmd(message, message_len);
 		if (0 != r) {
-			g_anLog->info("===g_app.sendCmd failed, ec={}", r);
-			//OutputDebugString("===g_app.sendCmd failed.");
+			g_anLog->info("===g_event_enginer.sendCmd failed, ec={}", r);
+			//OutputDebugString("===g_event_enginer.sendCmd failed.");
 		}
 
 
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 		nreaded = 0;
 	}
 
-	g_app.stop();
+	g_event_enginer.stop();
 
 	an_closeLog();
 

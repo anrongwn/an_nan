@@ -140,3 +140,9 @@ private:
 	std::queue<an_Async*> async_queue_;
 	class anRun2 * that_;
 };
+
+//
+struct an_work_req : public uv_work_t {
+	class anXfsApp * that_;
+	uv_buf_t * result_;	//ÃüÁî·µ»Ø½á¹ûbuf
+};

@@ -3,7 +3,7 @@
 #include "libuv\\uv.h"
 #include <string>
 #include "an_async.h"
-
+#include "anXfsApp.h"
 
 class anRun2
 {
@@ -27,6 +27,17 @@ public:
 	};
 
 	int sendCmd(const char * cmd, size_t len);
+	int echoCmdResult(const char *result, size_t len);
+private:
+
+	int init(HINSTANCE hInstance);
+	static void eLoop(void * arg);
+
+	static void an_async_cb(uv_async_t* handle);
+	static void an_alloc_cb(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf);
+	static void an_read_cb(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
+	static void an_close_cb(uv_handle_t* handle);
+
 private:
 	HWND hWnd_;
 	WNDCLASS wc_;
@@ -38,12 +49,6 @@ private:
 	HANDLE stdout_;
 	DWORD msg_thread_id_;
 
-	int init(HINSTANCE hInstance);
-	static void eLoop(void * arg);
-
-	static void an_async_cb(uv_async_t* handle);
-	static void an_alloc_cb(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf);
-	static void an_read_cb(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
-	static void an_close_cb(uv_handle_t* handle);
+	anXfsApp xfs_;
 };
 

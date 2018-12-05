@@ -33,6 +33,12 @@
     <ClInclude Include="an_async.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="anXfsApp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="anCmdParser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -45,6 +51,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="anRun2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="anXfsApp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="anCmdParser.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

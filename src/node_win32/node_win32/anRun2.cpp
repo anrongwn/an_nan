@@ -4,6 +4,7 @@
 #include <sstream>
 #include <chrono>
 #include <ctime>
+#include <functional>
 
 #ifdef DEBUG
 #pragma comment(lib, ".//lib//libuv//debug//libuv.lib")
@@ -24,6 +25,10 @@ anRun2::anRun2()
 	hInstance_ = nullptr;
 
 	msg_thread_id_ = 0;
+
+	//注册完成消息回调函数
+	xfs_.register_completed_cb(&anRun2::echoCmdResult, this, \
+		std::placeholders::_1, std::placeholders::_2);
 }
 
 
@@ -295,6 +300,20 @@ void anRun2::an_async_cb(uv_async_t* handle) {
 	//CanAllocator::an_free(p_as_data);
 
 	uv_close((uv_handle_t*)handle, anRun2::an_close_cb);
+}
+int anRun2::echoCmdResult(const char *result, size_t len) {
+	int r = 0;
+
+	DWORD nreaded = 0;
+	BOOL res = WriteFile(stdout_, result, len, &nreaded, NULL);
+	if (TRUE == res){
+		FlushFileBuffers(stdout_);
+	}
+
+	g_anLog->info("WriteFile result={}, result_len={0:d}, Written={0:d}, lasterror={0:d}", \
+		result, len, nreaded, (res ? 0 : GetLastError()));
+
+	return r;
 }
 int anRun2::sendCmd(const char * cmd, size_t len) {
 	/*
