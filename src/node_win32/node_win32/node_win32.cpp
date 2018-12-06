@@ -54,15 +54,21 @@ int main(int argc, char **argv)
 	if (argc == 1) return 0;
 #endif // NDEBUG
 
-	const int buf_size = 1024;
-	char buf[buf_size] = { 0 };
+	
+
+	/*
+	char * tmp = "{\"cmd\":\"wfsopen\",\"timestamp\":1544064176060,\"timeout\":0,\"data\":{\"cmdid\":0,\"servicename\":\"\",\"param\":{\"spversionreq\":\"3.03\"}},\"result\":{}}";
+	g_anLog->info("test {}", tmp);
+	*/
 
 	/*
 	sprintf_s(buf, "===argc=%d", argc);
 	OutputDebugStringA(buf);
 	*/
-	g_anLog->debug("===argc num={}", argc);
+	g_anLog->debug("main argc num={}", argc);
 
+	const int buf_size = 1024;
+	char buf[buf_size] = { 0 };
 	memset(buf, 0x00, buf_size);
 	for (int i = 0; i < argc; ++i) {
 		/*
@@ -70,7 +76,7 @@ int main(int argc, char **argv)
 		OutputDebugStringA(buf);
 		memset(buf, 0x00, buf_size);
 		*/
-		g_anLog->debug("===argv[{}]= {}", i, argv[i]);
+		g_anLog->debug("main argv[{}]= {}", i, argv[i]);
 	}
 
 	HANDLE hStdIn = INVALID_HANDLE_VALUE;
@@ -84,7 +90,7 @@ int main(int argc, char **argv)
 
 	if ((INVALID_HANDLE_VALUE == hStdIn) || (INVALID_HANDLE_VALUE == hStdOut)) {
 		//OutputDebugString("===invalid stdin or stdout handle.exit(1)");
-		g_anLog->info("===invalid stdin or stdout handle.exit(1)");
+		g_anLog->info("main invalid stdin or stdout handle.exit(1)");
 		exit(1);
 	}
 	
@@ -114,7 +120,7 @@ int main(int argc, char **argv)
 		OutputDebugStringA(buf);
 		//memset(buf, 0x00, buf_size);
 		*/
-		g_anLog->info("===recv message_len={}", message_len);
+		g_anLog->info("main recv message_len: ReadFile({})={}.", message_len, res);
 		//second : read message data
 		nreaded = 0;
 		res = ::ReadFile(hStdIn, (void*)message, message_len, &nreaded, NULL);
@@ -125,7 +131,7 @@ int main(int argc, char **argv)
 		OutputDebugStringA(buf);
 		//memset(buf, 0x00, buf_size);
 		*/
-		g_anLog->info("==={} ReadFile readed={}, message_len={}, message={}", res, nreaded, message_len, message);
+		g_anLog->info("main recv message: ReadFile(readed={}, message_len={}, message={})={}.",  nreaded, message_len, message, res);
 
 		if ((FALSE == res) || (nreaded <= 0)) {
 			continue;
@@ -137,12 +143,12 @@ int main(int argc, char **argv)
 		if (0==strcmp(EXIT_CODE, message))
 		{
 			//OutputDebugString("===reciv @EOT@EOT cmd, exit.\0");
-			g_anLog->debug("===reciv {} cmd, exit.", EXIT_CODE);
+			g_anLog->debug("main reciv {} cmd, exit.", EXIT_CODE);
 			break;
 		}
 		int r = g_event_enginer.sendCmd(message, message_len);
 		if (0 != r) {
-			g_anLog->info("===g_event_enginer.sendCmd failed, ec={}", r);
+			g_anLog->info("main g_event_enginer.sendCmd failed, ec={}", r);
 			//OutputDebugString("===g_event_enginer.sendCmd failed.");
 		}
 
@@ -156,7 +162,7 @@ int main(int argc, char **argv)
 
 	an_closeLog();
 
-	g_anLog->debug("===node_win32 app exit.");
+	g_anLog->debug("main node_win32 app exit.");
     return 0;
 }
 

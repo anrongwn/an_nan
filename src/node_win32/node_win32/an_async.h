@@ -144,5 +144,5 @@ private:
 //
 struct an_work_req : public uv_work_t {
 	class anXfsApp * that_;
-	uv_buf_t * result_;	//命令返回结果buf
+	uv_buf_t * resp_;	//命令返回结果buf
 };

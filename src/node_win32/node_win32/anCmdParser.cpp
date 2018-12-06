@@ -94,6 +94,6 @@ char * anCmdParser::getCmdParam() {
 	return cJSON_Print(param);//需手动释放
 }
 
-cJSON * anCmdParser::addResult(const char * result) {
-	return cJSON_AddRawToObject(root_, "result", result);
+cJSON * anCmdParser::addCmdResp(const char * resp) {
+	return cJSON_AddRawToObject(root_, "response", resp);
 }

@@ -249,33 +249,40 @@ static char date_tmp[24] = { 0 };
 
 int anRun2::task(const char * cmd, size_t len) {
 	int r = 0;
+
+	//OutputDebugString("===anRun2::task begin...");
 	uv_buf_t * cmd_data = (uv_buf_t*)CanAllocator::an_malloc(sizeof(uv_buf_t));
 	cmd_data->len = (len+1);
 	cmd_data->base = CanAllocator::an_malloc(cmd_data->len);
+	memcpy(cmd_data->base, cmd, len);
 	cmd_data->base[len] = '\0';
+	//OutputDebugString(cmd_data->base);
 
 	an_work_req * work = (an_work_req*)CanAllocator::an_malloc(sizeof(an_work_req));
 	work->that_ = &this->xfs_;
 	work->data = cmd_data;
-	work->result_ = nullptr;
+	work->resp_ = nullptr;
 
 	r = uv_queue_work(this->loop_, work, anXfsApp::work_cb, anXfsApp::completed_work_cb);
 	
-	g_anLog->info("anRun2::task work={0:x}, cmd={}, cmd_len={}, uv_queue_work={}", (void*)work, cmd_data->base, cmd_data->len, r);
+	//g_anLog->info("anRun2::task, cmd={}, cmd_len={}, uv_queue_work={}", cmd_data->base, cmd_data->len, r);
+	//OutputDebugString("===anRun2::task uv_queue_work end.");
+
 	return r;
 }
 
 void anRun2::an_async_cb(uv_async_t* handle) {
 	an_Async * p_as_data = static_cast<an_Async*>(handle);
 
-	g_anLog->info("anRun2::an_async_cb handle={0:x}, cmd={}, cmd_len={}", (void*)handle, p_as_data->base, p_as_data->len);
-	//auto start = std::chrono::system_clock::now();
-
 	//生成work任务
 	anRun2 * that = static_cast<anRun2*>(p_as_data->that);
 	that->task(p_as_data->base, p_as_data->len);
+	
 
-	/*//test echo
+	/*
+	//test echo
+	auto start = std::chrono::system_clock::now();
+
 	cmd_len = p_as_data->len;
 	memcpy(cmd_data, p_as_data->base, cmd_len);
 	memcpy(cmd_data + cmd_len, echo_flag, 9);
@@ -313,15 +320,18 @@ void anRun2::an_async_cb(uv_async_t* handle) {
 int anRun2::echoCmdResult(const char *result, size_t len) {
 	int r = 0;
 
+	//OutputDebugString("===anRun2::echoCmdResult begin...");
+
 	DWORD nreaded = 0;
 	BOOL res = WriteFile(stdout_, result, len, &nreaded, NULL);
 	if (TRUE == res){
 		FlushFileBuffers(stdout_);
 	}
 
-	g_anLog->info("WriteFile result={}, result_len={0:d}, Written={0:d}, lasterror={0:d}", \
-		result, len, nreaded, (res ? 0 : GetLastError()));
+	g_anLog->info("anRun2::echoCmdResult WriteFile({}), result_len={}, Written={}, lasterror={}", \
+		std::string(result, len), len, nreaded, (res ? 0 : GetLastError()));
 
+	OutputDebugString("===anRun2::echoCmdResult end.");
 	return r;
 }
 int anRun2::sendCmd(const char * cmd, size_t len) {

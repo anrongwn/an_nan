@@ -22,6 +22,11 @@ public:
 	void register_completed_cb(F&& f, T&& obj, Args&&... args) {
 		fn_ = std::bind(std::forward<F>(f), std::forward<T>(obj), \
 			std::placeholders::_1, std::placeholders::_2);
+
+		//Æô¶¯xfs
+		if (fn_)
+			anXfsApp::initXFS();
+
 	};
 
 	//

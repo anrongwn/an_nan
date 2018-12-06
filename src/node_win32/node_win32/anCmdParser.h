@@ -58,7 +58,7 @@ public:
 		cJSON_free(param);
 	}
 
-	cJSON * addResult(const char * result);
+	cJSON * addCmdResp(const char * resp);
 	char * getCmdBuffer() {
 		return cJSON_Print(root_);
 	}
