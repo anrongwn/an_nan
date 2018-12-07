@@ -102,11 +102,25 @@ void anXfsApp::work_cb(uv_work_t* req) {
 	int cmdtype = cmdObject.getCmdType();
 	int timestamp = cmdObject.getTimeStamp();
 	int timeout = cmdObject.getTimeOut();
-	char * servicename = cmdObject.getServiceName();
 	int cmdid = cmdObject.getCmdId();
 	char * cmdParam = cmdObject.getCmdParam();
 
-	
+	/*
+	char * servicename = cmdObject.getServiceName();
+	std::string output;
+	if (servicename) {
+		output = fmt::format("=======service name: {}", servicename);
+	}
+	std::vector<std::string> vSN;
+	cmdObject.getServiceNameV(vSN);
+	output = fmt::format("=======service name: size={},", vSN.size());
+	for (auto it : vSN) {
+		output += it;
+		output += " ";
+	}
+	g_anLog->debug(output);
+	*/
+
 	switch (cmdtype) {
 	case e_an_wfsopen:
 		break;

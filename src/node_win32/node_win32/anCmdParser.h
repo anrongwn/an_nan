@@ -52,6 +52,7 @@ public:
 
 	int getCmdId();
 	char * getServiceName();
+	int getServiceNameV(std::vector<std::string> &v);
 	cJSON * getCmdParamObject();
 	char * getCmdParam(); 
 	void freeOutput(char * param) {

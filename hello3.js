@@ -103,7 +103,7 @@ const interval_cb = async function () {
         timeout: (reqsid += 1),
         data: {
             cmdid: 0,
-            servicename: 'CardReader',
+            servicename: ['CardReader', 'CashAcceptor', 'CashDispenser'],
             param: {
                 spversionreq:'3.03'
             }

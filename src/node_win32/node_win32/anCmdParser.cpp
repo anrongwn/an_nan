@@ -69,12 +69,30 @@ char * anCmdParser::getServiceName() {
 	cJSON * sub = this->getData();
 	if (sub) {
 		cJSON * item = cJSON_GetObjectItem(sub, "servicename");
-		if (item) {
+		if ((item) && (false==cJSON_IsArray(item))){
 			name = item->valuestring;
 		}
 	}
 
 	return name;
+}
+int anCmdParser::getServiceNameV(std::vector<std::string> &v) {
+	int num = 0;
+	cJSON * sub = this->getData();
+	if (sub) {
+		cJSON * item = cJSON_GetObjectItem(sub, "servicename");
+		if ((item)&& (cJSON_IsArray(item))) {
+			num = cJSON_GetArraySize(item);
+			cJSON * ai = nullptr;
+			for (auto i = 0; i < num; ++i) {
+				ai = cJSON_GetArrayItem(item, i);
+				if (ai) {
+					v.emplace_back(ai->valuestring);
+				}
+			}
+		}
+	}
+	return num;
 }
 
 cJSON * anCmdParser::getCmdParamObject() {
