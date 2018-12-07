@@ -250,6 +250,7 @@ static char date_tmp[24] = { 0 };
 int anRun2::task(const char * cmd, size_t len) {
 	int r = 0;
 
+	//std::string log = fmt::format("adfaf{}", 24);
 	/*
 	//OutputDebugString("===anRun2::task begin...");
 	uv_buf_t * cmd_data = (uv_buf_t*)CanAllocator::an_malloc(sizeof(uv_buf_t));

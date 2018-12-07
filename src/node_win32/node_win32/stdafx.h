@@ -21,6 +21,8 @@
 #include "include\spdlog\async.h"
 #include "include\spdlog\sinks\basic_file_sink.h"
 #include "include\spdlog\sinks\daily_file_sink.h"
+#include "include\spdlog\fmt\fmt.h"
+
 extern std::shared_ptr<spdlog::logger> g_anLog;
 void an_initLog();
 void an_closeLog();

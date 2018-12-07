@@ -183,7 +183,4 @@ void anXfsApp::completed_work_cb(uv_work_t* req, int status) {
 	CanAllocator::an_free(work->data);
 	CanAllocator::an_free(work);
 	*/
-
-
-
 }
