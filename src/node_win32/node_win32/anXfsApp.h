@@ -48,7 +48,7 @@ private:
 	static HAPP s_app_;
 
 	std::mutex mtx_{};
-	std::function<int(const char*, size_t)> fn_;
+	std::function<int(an_work_req *, int)> fn_;
 	std::unordered_map<std::string, HSERVICE> sp_map_;//service_name=hservice
 };
 

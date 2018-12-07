@@ -108,7 +108,6 @@ const interval_cb = async function () {
                 spversionreq:'3.03'
             }
         }
-        //result:{}
     };
     /*
     let message = moment().format('YYYY-MM-DD HH:mm:ss.SSS');

@@ -145,4 +145,50 @@ private:
 struct an_work_req : public uv_work_t {
 	class anXfsApp * that_;
 	uv_buf_t * resp_;	//命令返回结果buf
+
+	an_work_req() = delete;
+	explicit an_work_req(class anXfsApp *handle) {
+		data = nullptr;
+		that_ = handle;
+		resp_ = nullptr;
+	}
+
+	~an_work_req() {
+		uv_buf_t * tmp = static_cast<uv_buf_t*>(data);
+		if (tmp) {
+			if (tmp->base) {
+				CanAllocator::an_free(tmp->base);
+				//tmp->len = 0;
+			}
+			CanAllocator::an_free(data);
+		}
+		if (resp_) {
+			if (resp_->base) {
+				CanAllocator::an_free(resp_->base);
+				//resp_->len = 0;
+			}
+			CanAllocator::an_free(resp_);
+		}
+	}
+
+	/*//注意只设置一次，多次造成内存泄漏*/
+	uv_buf_t * setData(const char *cmd, size_t len){
+		uv_buf_t * cmd_data = (uv_buf_t*)CanAllocator::an_malloc(sizeof(uv_buf_t));
+		cmd_data->len = (len + 1);
+		cmd_data->base = CanAllocator::an_malloc(cmd_data->len);
+		memcpy(cmd_data->base, cmd, len);
+		cmd_data->base[len] = '\0';
+
+		data = cmd_data;
+		return cmd_data;
+	}
+	/*//注意只设置一次，多次造成内存泄漏*/
+	uv_buf_t * setResp(const char *buf, size_t len) {
+		resp_ = (uv_buf_t *)CanAllocator::an_malloc(sizeof(uv_buf_t));
+		resp_->base = CanAllocator::an_malloc(len);
+		memcpy(resp_->base, buf, len);
+		resp_->len = len;
+
+		return resp_;
+	}
 };

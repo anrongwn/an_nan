@@ -54,17 +54,15 @@ public:
 	char * getServiceName();
 	cJSON * getCmdParamObject();
 	char * getCmdParam(); 
-	void freeCmdParam(char * param) {
+	void freeOutput(char * param) {
 		cJSON_free(param);
 	}
 
 	cJSON * addCmdResp(const char * resp);
 	char * getCmdBuffer() {
-		return cJSON_Print(root_);
+		return cJSON_PrintUnformatted(root_);
 	}
-	void freeCmdBuffer(char * buffer) {
-		cJSON_free(buffer);
-	}
+	
 protected:
 	inline cJSON * getData() {
 		cJSON * item = nullptr;

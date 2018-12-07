@@ -107,7 +107,6 @@ void anXfsApp::work_cb(uv_work_t* req) {
 	char * cmdParam = cmdObject.getCmdParam();
 
 	
-
 	switch (cmdtype) {
 	case e_an_wfsopen:
 		break;
@@ -147,33 +146,44 @@ void anXfsApp::work_cb(uv_work_t* req) {
 	//cmd_data[cmd_len] = '\0';
 	*/
 
-	uv_buf_t * resp = (uv_buf_t *)CanAllocator::an_malloc(sizeof(uv_buf_t));
 	/*
+	uv_buf_t * resp = (uv_buf_t *)CanAllocator::an_malloc(sizeof(uv_buf_t));
+	
 	tmp->base = CanAllocator::an_malloc(cmd_len);
 	memcpy(tmp->base, cmd_data, cmd_len);
 	tmp->len = cmd_len;
 	*/
+	/*
 	int cmd_len = strlen(cmdresp);
 	resp->base = CanAllocator::an_malloc(cmd_len);
 	memcpy(resp->base, cmdresp, cmd_len);
 	resp->len = cmd_len;
-
-	work->resp_ = resp;
+	*/
+	work->setResp(cmdresp, strlen(cmdresp));
+	//work->resp_ = resp;
 	
 	//OutputDebugString("=== anXfsApp::work_cb end.");
+	cmdObject.freeOutput(cmdParam);
+	cmdObject.freeOutput(cmdresp);
 }
 
 void anXfsApp::completed_work_cb(uv_work_t* req, int status) {
 	an_work_req * work = static_cast<an_work_req*>(req);
 
+	work->that_->fn_(work, status);
+
+	/*
 	//
 	int r = work->that_->fn_(work->resp_->base, work->resp_->len);
-		
+	
 	//free
 	CanAllocator::an_free(work->resp_->base);
 	CanAllocator::an_free(work->resp_);
 	CanAllocator::an_free(((uv_buf_t*)(work->data))->base);
 	CanAllocator::an_free(work->data);
 	CanAllocator::an_free(work);
+	*/
+
+
 
 }

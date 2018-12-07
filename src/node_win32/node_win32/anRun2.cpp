@@ -250,6 +250,7 @@ static char date_tmp[24] = { 0 };
 int anRun2::task(const char * cmd, size_t len) {
 	int r = 0;
 
+	/*
 	//OutputDebugString("===anRun2::task begin...");
 	uv_buf_t * cmd_data = (uv_buf_t*)CanAllocator::an_malloc(sizeof(uv_buf_t));
 	cmd_data->len = (len+1);
@@ -257,11 +258,13 @@ int anRun2::task(const char * cmd, size_t len) {
 	memcpy(cmd_data->base, cmd, len);
 	cmd_data->base[len] = '\0';
 	//OutputDebugString(cmd_data->base);
+	*/
 
-	an_work_req * work = (an_work_req*)CanAllocator::an_malloc(sizeof(an_work_req));
-	work->that_ = &this->xfs_;
-	work->data = cmd_data;
-	work->resp_ = nullptr;
+	an_work_req * work = new an_work_req(&this->xfs_);//(an_work_req*)CanAllocator::an_malloc(sizeof(an_work_req));
+	//work->that_ = &this->xfs_;
+	work->setData(cmd, len);
+	//work->data = cmd_data;
+	//work->resp_ = nullptr;
 
 	r = uv_queue_work(this->loop_, work, anXfsApp::work_cb, anXfsApp::completed_work_cb);
 	
@@ -317,21 +320,25 @@ void anRun2::an_async_cb(uv_async_t* handle) {
 
 	uv_close((uv_handle_t*)handle, anRun2::an_close_cb);
 }
-int anRun2::echoCmdResult(const char *result, size_t len) {
+int anRun2::echoCmdResult(an_work_req * work, int status) {
 	int r = 0;
 
 	//OutputDebugString("===anRun2::echoCmdResult begin...");
 
 	DWORD nreaded = 0;
-	BOOL res = WriteFile(stdout_, result, len, &nreaded, NULL);
+	BOOL res = WriteFile(stdout_, work->resp_->base, work->resp_->len, &nreaded, NULL);
 	if (TRUE == res){
 		FlushFileBuffers(stdout_);
 	}
 
 	g_anLog->info("anRun2::echoCmdResult WriteFile({}), result_len={}, Written={}, lasterror={}", \
-		std::string(result, len), len, nreaded, (res ? 0 : GetLastError()));
+		work->resp_->base, work->resp_->len, nreaded, (res ? 0 : GetLastError()));
 
-	OutputDebugString("===anRun2::echoCmdResult end.");
+	
+	//Çå³ý
+	delete work;
+	
+	//OutputDebugString("===anRun2::echoCmdResult end.");
 	return r;
 }
 int anRun2::sendCmd(const char * cmd, size_t len) {

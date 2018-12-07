@@ -27,7 +27,7 @@ public:
 	};
 
 	int sendCmd(const char * cmd, size_t len);
-	int echoCmdResult(const char *result, size_t len);
+	int echoCmdResult(an_work_req * work, int status);
 private:
 	int task(const char *cmd, size_t len);
 
