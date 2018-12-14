@@ -16,7 +16,8 @@
 #include "anRun2.h"
 
 
-const char * EXIT_CODE = "@EOT@EOT";	//EOT
+//C++11 原生字符串（raw string literals）
+const char * EXIT_CODE = R"(@EOT@EOT)";	//EOT
 
 anRun2 g_event_enginer;
 an_Async_Wrap g_cmd(&g_event_enginer);
@@ -54,7 +55,8 @@ int main(int argc, char **argv)
 	if (argc == 1) return 0;
 #endif // NDEBUG
 
-	
+	//C++11 原生字符串（raw string literals）
+	//std::string tmp = R"({"cmd":"wfsopen","timestamp":1544410101421,"timeout":30604,"data":{"cmdid":0,"servicename":["CardReader","CashAcceptor","CashDispenser"],"param":{"spversionreq":"3.03"}}})";
 
 	/*
 	char * tmp = "{\"cmd\":\"wfsopen\",\"timestamp\":1544064176060,\"timeout\":0,\"data\":{\"cmdid\":0,\"servicename\":\"\",\"param\":{\"spversionreq\":\"3.03\"}},\"result\":{}}";

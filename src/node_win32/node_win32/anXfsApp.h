@@ -7,12 +7,17 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
-
+#include <memory>
 
 
 
 class anXfsApp
 {
+	/*
+	template<typename T, typename... Args>
+	using Constructor = std::function<std::shared_ptr<T>(Args...)>;
+	*/
+
 public:
 	anXfsApp();
 	~anXfsApp();
@@ -22,6 +27,11 @@ public:
 	void register_completed_cb(F&& f, T&& obj, Args&&... args) {
 		fn_ = std::bind(std::forward<F>(f), std::forward<T>(obj), \
 			std::placeholders::_1, std::placeholders::_2);
+
+		/*
+		auto name = typeid(Constructor<T, Args...>).name();
+		OutputDebugString(name);
+		*/
 
 		//Æô¶¯xfs
 		if (fn_)
