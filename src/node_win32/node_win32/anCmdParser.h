@@ -12,11 +12,13 @@ data:{...}
 result:{...}
 */
 typedef enum {
-	e_an_wfsopen=1,
+	e_an_unknow=0,
+	e_an_wfsopen,
 	e_an_wfsclose,
 	e_an_wfsgetinfo,
 	e_an_wfsexecute,
-	e_an_wfsundefined
+	e_an_wfsundefined,
+	e_an_end
 }e_an_cmdtype;
 static inline int an_get_cmdtype(const char*cmd) {
 	static std::unordered_map<std::string, int> s_type_map = { {"wfsopen", e_an_wfsopen }, {"wfsclose", e_an_wfsclose }, \
