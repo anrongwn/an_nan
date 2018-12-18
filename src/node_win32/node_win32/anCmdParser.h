@@ -11,6 +11,39 @@ timeout:
 param:[cmdid:0,buffer:{}],...
 result:[reqid:0, tstimestamp:0, cmdid:0, hr:0, buffer:{}],...
 */
+/*//
+{
+"cmd": "wfsopen",
+"timestamp" : 1545115872208,
+"timeout" : 1,
+"param" : {
+	"cmdid": 1024,
+		"servicename" : ["CardReader", "CashAcceptor", "CashDispenser"],
+		"buffer" : {
+		"spversionreq": "3.03"
+	}
+},
+"response": {
+	"result": [{
+		"reqid": 1545115872208,
+			"cmdid" : 1024,
+			"hr" : -17,
+			"tstimestamp" : 1545115874099
+	}, {
+		"reqid": 1545115872208,
+		"cmdid" : 1024,
+		"hr" : -17,
+		"tstimestamp" : 1545115874099
+	}, {
+		"reqid": 1545115872208,
+		"cmdid" : 1024,
+		"hr" : -17,
+		"tstimestamp" : 1545115874100
+	}]
+}
+}
+*/
+
 typedef enum {
 	e_an_unknow=0,
 	e_an_wfsopen,

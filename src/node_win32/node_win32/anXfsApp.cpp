@@ -25,11 +25,11 @@ HRESULT anXfsApp::initXFS() {
 		WFSVERSION xfsversion = {};
 		hr = WFSStartUp(0x00030003, &xfsversion);
 		if ((WFS_SUCCESS == hr) || (WFS_ERR_ALREADY_STARTED == hr)) {
-			OutputDebugString("===WFSStartUp success.");
+			//OutputDebugString("===WFSStartUp success.");
 			hr = WFSCreateAppHandle(&s_app_);
 			if (WFS_SUCCESS != hr)
 			{
-				OutputDebugString("===WFSCreateAppHandle failed.");
+				//OutputDebugString("===WFSCreateAppHandle failed.");
 			}
 		}
 	}
