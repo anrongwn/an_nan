@@ -7,10 +7,14 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
+#include <map>
+#include <iterator>
 #include <memory>
+#include <utility>
 
+#include "anCmdParser.h"
 
-
+//
 class anXfsApp
 {
 	/*
@@ -53,6 +57,8 @@ public:
 	static void work_cb(uv_work_t* req);
 	static void completed_work_cb(uv_work_t* req, int status);
 
+	static HRESULT an_wfsopen(anXfsApp* that, anCmdParser *cmd, char** result);
+
 private:
 	static std::atomic_bool s_once_;
 	static HAPP s_app_;
@@ -60,5 +66,6 @@ private:
 	std::mutex mtx_{};
 	std::function<int(an_work_req *, int)> fn_;
 	std::unordered_map<std::string, HSERVICE> sp_map_;//service_name=hservice
+
 };
 

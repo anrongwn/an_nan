@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "anXfsApp.h"
 
-#include "anCmdParser.h"
+
 #include <ctime>
 
 #pragma comment(lib, "msxfs.lib")
@@ -23,10 +23,15 @@ HRESULT anXfsApp::initXFS() {
 	HRESULT hr = WFS_SUCCESS;
 	if (false == s_once_.exchange(true)) {
 		WFSVERSION xfsversion = {};
-		 hr = WFSStartUp(0x00030003, &xfsversion);
-		 if (WFS_SUCCESS == hr) {
-			 hr = WFSCreateAppHandle(&s_app_);
-		 }
+		hr = WFSStartUp(0x00030003, &xfsversion);
+		if ((WFS_SUCCESS == hr) || (WFS_ERR_ALREADY_STARTED == hr)) {
+			OutputDebugString("===WFSStartUp success.");
+			hr = WFSCreateAppHandle(&s_app_);
+			if (WFS_SUCCESS != hr)
+			{
+				OutputDebugString("===WFSCreateAppHandle failed.");
+			}
+		}
 	}
 
 	return hr;
@@ -90,6 +95,48 @@ timeout:
 data:{...}
 result:{...}
 */
+
+static char * s_lpszAppID = R"(anNoteWin322)";
+HRESULT anXfsApp::an_wfsopen(anXfsApp* that, anCmdParser *cmd, char**result) {
+	HRESULT hr = WFS_SUCCESS;
+	int timeout = 0; //cmd->getTimeOut();
+	std::vector<std::string> vServiceName;
+	DWORD dwTraceLevel = WFS_TRACE_ALL_API | WFS_TRACE_ALL_SPI | WFS_TRACE_MGR;
+	WFSVERSION SrvcVersion = {}, SPIVersion = {};
+	DWORD dwSrvcVersionsRequired = 0x00030003;
+	HSERVICE hService = 0;
+
+	cmd->getServiceNameV(vServiceName);
+	anResultParser resultObject;
+
+	for (auto& it : vServiceName) {
+		if (it.empty()) continue;
+
+		if (0 == that->getSp(it)) {
+			//OutputDebugString(it.c_str());
+			timeout = cmd->getTimeOut();
+			hr = WFSOpen(const_cast<char*>(it.c_str()), anXfsApp::s_app_, s_lpszAppID, dwTraceLevel, timeout, \
+				dwSrvcVersionsRequired, &SrvcVersion, &SPIVersion, &hService);
+			if (WFS_SUCCESS == hr) {
+				that->insertSp(it, hService);
+			}
+		}
+
+		anResultParser::rp_item item = resultObject.insertItem();
+		resultObject.addReqId(item, cmd->getTimeStamp());
+		resultObject.addCmdId(item, cmd->getCmdId());
+		resultObject.addHr(item, hr);
+		resultObject.addTsTimeStamp(item);
+
+		g_anLog->info("an_wfsopen WFSOpen({})={}", it.c_str(), hr);
+	}
+
+	//
+	char * reps = resultObject.get();
+	(*result) = reps;
+	
+	return hr;
+}
 void anXfsApp::work_cb(uv_work_t* req) {
 	an_work_req * work = static_cast<an_work_req*>(req);
 	uv_buf_t * cmd = static_cast<uv_buf_t *>(work->data);
@@ -100,10 +147,12 @@ void anXfsApp::work_cb(uv_work_t* req) {
 	//¹¹Ôìcmd
 	anCmdParser cmdObject(cmd->base);
 	int cmdtype = cmdObject.getCmdType();
+	/*
 	int timestamp = cmdObject.getTimeStamp();
 	int timeout = cmdObject.getTimeOut();
 	int cmdid = cmdObject.getCmdId();
 	char * cmdParam = cmdObject.getCmdParam();
+	*/
 
 	/*
 	char * servicename = cmdObject.getServiceName();
@@ -121,8 +170,10 @@ void anXfsApp::work_cb(uv_work_t* req) {
 	g_anLog->debug(output);
 	*/
 
+	char * reps = nullptr;// R"({"rc":1054,"result":{"hr":1054}})";
 	switch (cmdtype) {
 	case e_an_wfsopen:
+		anXfsApp::an_wfsopen(work->that_, &cmdObject, &reps);
 		break;
 	case e_an_wfsclose:
 		break;
@@ -133,9 +184,9 @@ void anXfsApp::work_cb(uv_work_t* req) {
 	default:
 		break;
 	}
-	char * tmp = "{\"rc\":1054,\"result\":{\"hr\":1054}}";
-	cmdObject.addCmdResp(tmp);
-
+	//char * tmp = "{\"rc\":1054,\"result\":{\"hr\":1054}}";
+	cmdObject.addCmdResp(reps);
+	
 	char *cmdresp = cmdObject.getCmdBuffer();
 	g_anLog->info("anXfsApp::work_cb josn cmd={}", cmdresp);
 
@@ -177,7 +228,8 @@ void anXfsApp::work_cb(uv_work_t* req) {
 	//work->resp_ = resp;
 	
 	//OutputDebugString("=== anXfsApp::work_cb end.");
-	cmdObject.freeOutput(cmdParam);
+	//cmdObject.freeOutput(cmdParam);
+	cmdObject.freeOutput(reps);
 	cmdObject.freeOutput(cmdresp);
 }
 

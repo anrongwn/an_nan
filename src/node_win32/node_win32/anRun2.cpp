@@ -34,6 +34,7 @@ anRun2::anRun2()
 
 anRun2::~anRun2()
 {
+	anXfsApp::uninitXFS();
 }
 
 LRESULT CALLBACK anRun2::mainWndProc(
@@ -332,8 +333,13 @@ int anRun2::echoCmdResult(an_work_req * work, int status) {
 		FlushFileBuffers(stdout_);
 	}
 
+	/*
+	g_anLog->info("anRun2::echoCmdResult WriteFile({}), result_len={}, Written={}, lasterror={}", \
+		std::string(work->resp_->base, work->resp_->len), work->resp_->len, nreaded, (res ? 0 : GetLastError()));
+		*/
 	g_anLog->info("anRun2::echoCmdResult WriteFile({}), result_len={}, Written={}, lasterror={}", \
 		work->resp_->base, work->resp_->len, nreaded, (res ? 0 : GetLastError()));
+
 
 	
 	//Çå³ý

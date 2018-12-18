@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "anCmdParser.h"
-
+#include <chrono>
 
 anCmdParser::anCmdParser(const char * cmd)
 {
@@ -24,13 +24,13 @@ int anCmdParser::getCmdType() {
 	return (an_get_cmdtype(cmd));
 }
 
-int anCmdParser::getTimeStamp() {
-	int r = 0;
+double anCmdParser::getTimeStamp() {
+	double r = 0;
 
 	if (root_) {
 		cJSON * item = cJSON_GetObjectItem(root_, "timestamp");
 		if (nullptr != item) {
-			r = item->valueint;
+			r = item->valuedouble;
 		}
 	}
 
@@ -114,4 +114,52 @@ char * anCmdParser::getCmdParam() {
 
 cJSON * anCmdParser::addCmdResp(const char * resp) {
 	return cJSON_AddRawToObject(root_, "response", resp);
+}
+
+anResultParser::anResultParser() {
+	root_ = cJSON_CreateObject();
+
+	body_ = cJSON_CreateArray();
+
+	cJSON_AddItemToObject(root_, "result", body_);
+}
+
+anResultParser::~anResultParser() {
+	if (root_) {
+		cJSON_Delete(root_);
+	}
+}
+
+//reqid:0, tstimestamp:0, cmdid:0, hr:0, buffer:
+anResultParser::rp_item anResultParser::insertItem() {
+	rp_item item = cJSON_CreateObject();
+
+	cJSON_AddItemToArray(body_, item);
+	return item;
+}
+anResultParser::rp_item anResultParser::addReqId(rp_item item, double reqid) {
+	return cJSON_AddNumberToObject(item, "reqid", reqid);
+}
+
+anResultParser::rp_item anResultParser::addTsTimeStamp(rp_item item) {
+	//定义毫秒级别的时钟类型   
+	typedef std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> microClock_type;
+	//获取当前时间点，windows system_clock是100纳秒级别的(不同系统不一样，自己按照介绍的方法测试)，所以要转换   
+	microClock_type tp = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+
+	return cJSON_AddNumberToObject(item, "tstimestamp", \
+		tp.time_since_epoch().count());
+}
+anResultParser::rp_item anResultParser::addCmdId(rp_item item, int cmdid) {
+	return cJSON_AddNumberToObject(item, "cmdid", cmdid);
+}
+anResultParser::rp_item anResultParser::addHr(rp_item item, HRESULT hr) {
+	return cJSON_AddNumberToObject(item, "hr", hr);
+}
+anResultParser::rp_item anResultParser::addBuffer(rp_item item, const char* buffer) {
+	return cJSON_AddRawToObject(item, "buffer", buffer);
+}
+
+char * anResultParser::get() {
+	return cJSON_PrintUnformatted(root_);
 }

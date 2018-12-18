@@ -185,9 +185,10 @@ struct an_work_req : public uv_work_t {
 	/*//注意只设置一次，多次造成内存泄漏*/
 	uv_buf_t * setResp(const char *buf, size_t len) {
 		resp_ = (uv_buf_t *)CanAllocator::an_malloc(sizeof(uv_buf_t));
-		resp_->base = CanAllocator::an_malloc(len);
-		memcpy(resp_->base, buf, len);
-		resp_->len = len;
+		resp_->len = len + 1;
+		resp_->base = CanAllocator::an_malloc(resp_->len);
+		memcpy(resp_->base, buf, resp_->len);
+		resp_->base[len] = '\0';
 
 		return resp_;
 	}

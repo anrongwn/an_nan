@@ -8,8 +8,8 @@
 cmd:wfsopen/wfsclose/wfsgetinf/wfsexecute
 timestamp:Now()
 timeout:
-data:{...}
-result:{...}
+param:[cmdid:0,buffer:{}],...
+result:[reqid:0, tstimestamp:0, cmdid:0, hr:0, buffer:{}],...
 */
 typedef enum {
 	e_an_unknow=0,
@@ -33,8 +33,16 @@ static inline int an_get_cmdtype(const char*cmd) {
 	return type;
 }
 
+struct NoCopyable {
+protected:
+	NoCopyable() = default;
+	~NoCopyable() = default;
 
-class anCmdParser
+	NoCopyable(const NoCopyable&) = delete;
+	NoCopyable& operator=(const NoCopyable&) = delete;
+};
+
+class anCmdParser : NoCopyable
 {
 public:
 	anCmdParser()=delete;
@@ -49,20 +57,20 @@ public:
 	}
 
 	int getCmdType();
-	int getTimeStamp();
+	double getTimeStamp();
 	int getTimeOut();
 
 	int getCmdId();
 	char * getServiceName();
 	int getServiceNameV(std::vector<std::string> &v);
 	cJSON * getCmdParamObject();
-	char * getCmdParam(); 
+	char * getCmdParam();
 	void freeOutput(char * param) {
 		cJSON_free(param);
 	}
 
 	cJSON * addCmdResp(const char * resp);
-	char * getCmdBuffer() {
+	char * getCmdBuffer() const {
 		return cJSON_PrintUnformatted(root_);
 	}
 	
@@ -71,7 +79,7 @@ protected:
 		cJSON * item = nullptr;
 
 		if (root_) {
-			item = cJSON_GetObjectItem(root_, "data");
+			item = cJSON_GetObjectItem(root_, "param");
 		}
 
 		return item;
@@ -80,3 +88,24 @@ private:
 	cJSON * root_{nullptr};
 };
 
+class anResultParser : NoCopyable {
+public:
+	anResultParser();
+	~anResultParser();
+	using rp_item = cJSON *;
+	
+	//reqid:0, tstimestamp:0, cmdid:0, hr:0, buffer:
+	rp_item insertItem();
+	rp_item addReqId(rp_item item, double reqid);
+	rp_item addTsTimeStamp(rp_item item);
+	rp_item addCmdId(rp_item item, int cmdid);
+	rp_item addHr(rp_item item, HRESULT hr);
+	rp_item addBuffer(rp_item item, const char* buffer);
+	char * get();
+	void freeOutput(char * param) {
+		cJSON_free(param);
+	}
+private:
+	cJSON * root_{ nullptr };
+	cJSON * body_{ nullptr };
+};

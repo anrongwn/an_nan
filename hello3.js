@@ -97,14 +97,15 @@ let reqsid = 0;
 const send_count = (200000 + 1);
 
 const interval_cb = async function () {
+    reqsid += 1;
     let cmd = {
         cmd: 'wfsopen',
         timestamp: new Date().getTime(),
-        timeout: (reqsid += 1),
-        data: {
-            cmdid: 0,
+        timeout: 180000,
+        param: {
+            cmdid: 1024,
             servicename: ['CardReader', 'CashAcceptor', 'CashDispenser'],
-            param: {
+            buffer: {
                 spversionreq:'3.03'
             }
         }
