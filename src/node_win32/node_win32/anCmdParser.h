@@ -10,8 +10,7 @@ timestamp:Now()
 timeout:
 param:[cmdid:0,buffer:{}],...
 result:[reqid:0, tstimestamp:0, cmdid:0, hr:0, buffer:{}],...
-*/
-/*//
+/////////////////
 {
 "cmd": "wfsopen",
 "timestamp" : 1545115872208,
