@@ -12,6 +12,7 @@ HAPP anXfsApp::s_app_{ nullptr };
 
 anXfsApp::anXfsApp()
 {
+	//g_anLog->info("anXfsApp::initXFS()--");
 }
 
 
@@ -21,18 +22,27 @@ anXfsApp::~anXfsApp()
 
 HRESULT anXfsApp::initXFS() {
 	HRESULT hr = WFS_SUCCESS;
+	//fmt::memory_buffer log;
+	//fmt::memory_buffer log2;
+	//fmt::format_to(log, "{x}", 42);
+	//log.data();
+	//std::string logData;
+
 	if (false == s_once_.exchange(true)) {
 		WFSVERSION xfsversion = {};
 		hr = WFSStartUp(0x00030003, &xfsversion);
+
+		//logData += fmt::format("WFSStartUp({:#08x})={}", 0x00030003, hr);
 		if ((WFS_SUCCESS == hr) || (WFS_ERR_ALREADY_STARTED == hr)) {
-			//OutputDebugString("===WFSStartUp success.");
+
 			hr = WFSCreateAppHandle(&s_app_);
-			if (WFS_SUCCESS != hr)
-			{
-				//OutputDebugString("===WFSCreateAppHandle failed.");
-			}
+
+			//logData += fmt::format(", WFSCreateAppHandle({:#08x})={}", (int)s_app_, hr);
+
 		}
 	}
+
+	//OutputDebugString(logData.c_str());
 
 	return hr;
 }
