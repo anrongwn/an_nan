@@ -97,7 +97,16 @@ public:
 	int getServiceNameV(std::vector<std::string> &v);
 	cJSON * getCmdParamObject();
 	char * getCmdParam();
-	void freeOutput(char * param) {
+
+	/**
+		\rst
+		释放能过cJSON_PrintUnformatted等接口输出的json 串,如:
+		char * buffer = getCmdBuffer();
+		...
+		freeOutput(buffer);
+		\endrst
+	*/
+	static void freeOutput(char * param) {
 		cJSON_free(param);
 	}
 
@@ -134,7 +143,15 @@ public:
 	rp_item addHr(rp_item item, HRESULT hr);
 	rp_item addBuffer(rp_item item, const char* buffer);
 	char * get();
-	void freeOutput(char * param) {
+	/**
+		\rst
+		释放能过cJSON_PrintUnformatted等接口输出的json 串,如:
+		char * buffer = get();
+		...
+		freeOutput(buffer);
+		\endrst
+	*/
+	static void freeOutput(char * param) {
 		cJSON_free(param);
 	}
 private:

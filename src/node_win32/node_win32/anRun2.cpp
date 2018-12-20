@@ -5,6 +5,7 @@
 #include <chrono>
 #include <ctime>
 #include <functional>
+#include <thread>
 
 #ifdef DEBUG
 #pragma comment(lib, ".//lib//libuv//debug//libuv.lib")
@@ -151,6 +152,10 @@ void anRun2::eLoop(void * arg) {
 
 	that->msg_thread_id_ = ::GetCurrentThreadId();
 
+	/*
+	std::thread::id  tid = std::this_thread::get_id();
+	uv_thread_t t = uv_thread_self();
+	*/
 	BOOL more = FALSE;
 	while (true) {
 		//”≈œ»uv_loop
